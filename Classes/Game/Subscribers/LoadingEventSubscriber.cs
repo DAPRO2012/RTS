@@ -4,14 +4,14 @@ using System;
 public class LoadingEventSubscriber
 {
     [SubscribeEvent]
-    public void Loading(RegisteringEvent e)
+    public void Registering(RegisteringEvent e)
     {
-        Console.WriteLine("Loading");
-
         BuiltInRegistries.GROUNDS.Register(Identifier.fromDefaultNamespace("grass"), new Ground());
+        BuiltInRegistries.GROUNDS.Register(Identifier.fromDefaultNamespace("stone"), new Ground());
+        BuiltInRegistries.GROUNDS.Register(Identifier.fromDefaultNamespace("sand"), new Ground());
 
-        BuiltInRegistries.SCENES.Register(Identifier.fromDefaultNamespace("menu"), new MenuScene(e.content));
-        BuiltInRegistries.SCENES.Register(Identifier.fromDefaultNamespace("game"), new GameScene(e.content));
+        BuiltInRegistries.SCENES.Register(Identifier.fromDefaultNamespace("menu"), new MenuScene(e.content, e.TextureManager));
+        BuiltInRegistries.SCENES.Register(Identifier.fromDefaultNamespace("game"), new GameScene(e.content, e.TextureManager));
 
         Scene.Set(Identifier.fromDefaultNamespace("menu"));
     }

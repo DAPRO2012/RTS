@@ -101,12 +101,10 @@ public class Chunk
 
                     if (tileTexture != null)
                     {
-                        spriteBatch.Draw(
-                            tileTexture.Atlas, 
-                            new Vector2(x * TileSize, y * TileSize), 
-                            tileTexture.SourceRect, 
-                            Color.White
-                        );
+                        tileTexture.Draw(
+                            spriteBatch,
+                            new Vector2(x * TileSize, y * TileSize),
+                            Color.White);
                     }
                 }
             }

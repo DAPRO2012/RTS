@@ -1,24 +1,27 @@
 using System;
 using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using RTS;
 
 public class Texture : DrawableResource
 {
-    public Texture(Identifier id, ContentManager content)
+    public Texture(Identifier id, ResourceManager resources)
     {
-        string rootDir =
-             System.IO.Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory, 
-                content.RootDirectory,
-                "assets"
-            );
+        Resource resource = resources.GetResource(
+            ResourceType.Assets,
+            new ResourceId(id.GetNamespace(), id.GetPath()));
+        if (resource == null)
+            throw new FileNotFoundException($"Texture resource not found: {id}");
 
+        using Stream stream = resource.Open();
+        _t = Texture2D.FromStream(Main.GetDevice(), stream);
+    }
 
-        string path = Data.GetPath(rootDir, id);
-        _t = Texture2D.FromFile(Main.GetDevice(), path);
+    public Texture(Resource resource)
+    {
+        using Stream stream = resource.Open();
+        _t = Texture2D.FromStream(Main.GetDevice(), stream);
     }
 
     public Texture(Texture2D t) => _t = t;

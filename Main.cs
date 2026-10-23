@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -19,13 +17,9 @@ public class Main : Game
     public static Point MIN_SIZE = new(640, 360);
 
     public static readonly EventBus EVENT_BUS = new();
-    public static readonly KeyboardManager KeyboardManager = new();
-    public static readonly MouseManager MouseManager = new();
 
-    private readonly TextureManager _textureManager;
-
-    private readonly SavedStorage _storage = new(new(AppContext.BaseDirectory, "Content"));
-    private static Path assetPath = new("resources", "assets");
+    private readonly TextureManager _textureManager = new();
+    private readonly ResourceManager _resourceManager;
 
     //Pipelines
     private readonly Pipeline<RegisteringEvent> _registryPipeline = new();
@@ -39,6 +33,9 @@ public class Main : Game
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
+        _resourceManager = new ResourceManager([
+            new Pack("default", System.IO.Path.Combine(AppContext.BaseDirectory, Content.RootDirectory))
+        ]);
         IsMouseVisible = true;
 
         Window.AllowUserResizing = true;
@@ -76,32 +73,12 @@ public class Main : Game
         _registryPipeline.WithStep(e => EVENT_BUS.Publish(e));
 
         _texturePipeline.WithStep(e => EVENT_BUS.Publish(e));
-        _texturePipeline.WithStep(e =>
-        {
-            Func<string, string[]> searchDir = (p) => [];
-            searchDir = path => {
-                List<string> outputPaths = [];
+        _texturePipeline.WithStep(e => e.TextureManager.LoadContent(e.ResourceManager, GetDevice()));
 
-                outputPaths.AddRange(Directory.GetFiles(path));
-                foreach (string dirPath in Directory.GetDirectories(path))
-                    outputPaths.AddRange(searchDir(dirPath));
-
-                return [.. outputPaths];
-            };
-
-            string fullAssetPath = Path.Combine(_storage.Path, assetPath).GetPath();
-            string[] paths = searchDir(fullAssetPath);
-            Dictionary<Identifier, Dictionary<Identifier, Texture>> textures = [];
-
-            foreach (string path in paths)
-            {
-                string fileRelativePath = System.IO.Path.GetRelativePath(fullAssetPath, path);
-                string filePath = System.IO.Path.ChangeExtension(fileRelativePath, null);
-            }
-        });
-
-        _loadingPipeline.WithStep(e => _registryPipeline.Run(new RegisteringEvent(e.content)));
-        _loadingPipeline.WithStep(e => _texturePipeline.Run(new TextureLoadingEvent(e.content, _textureManager)));
+        _loadingPipeline.WithStep(e => _registryPipeline.Run(
+            new RegisteringEvent(e.content, e.ResourceManager, e.TextureManager)));
+        _loadingPipeline.WithStep(e => _texturePipeline.Run(
+            new TextureLoadingEvent(e.content, e.ResourceManager, e.TextureManager)));
 
         base.Initialize();
     }
@@ -110,15 +87,14 @@ public class Main : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         
-        EVENT_BUS.Publish(new RegisteringEvent(Content));
+        _loadingPipeline.Run(new LoadingEvent(Content, _resourceManager, _textureManager));
     }
 
     protected override void Update(GameTime gameTime)
     {
         Dimensions = GraphicsDevice.Viewport;
 
-        KeyboardManager.Update(gameTime);
-        MouseManager.Update(gameTime);
+        InputManager.Instance.Update();
 
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
@@ -133,9 +109,19 @@ public class Main : Game
     {
         GraphicsDevice.Clear(Color.Black);
 
-        // TODO: Add your drawing code here
         Scene.DrawScene(gameTime, _spriteBatch);
 
         base.Draw(gameTime);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _textureManager.Dispose();
+            _resourceManager.Dispose();
+        }
+
+        base.Dispose(disposing);
     }
 }

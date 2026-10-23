@@ -42,7 +42,7 @@ public class Registry<T>
     {
         if (_numericToId.TryGetValue(numericId, out var id))
             return _entries[id];
-        throw default;
+        return default;
     }
 
     public int GetNumericId(Identifier id)

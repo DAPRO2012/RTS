@@ -14,7 +14,6 @@ public class SavedStorage
     {
         path.CreateDirectory();
         _path = path;
-        Console.WriteLine("Path: " + path);
     }
 
     public Path GetDataFile(Identifier id)

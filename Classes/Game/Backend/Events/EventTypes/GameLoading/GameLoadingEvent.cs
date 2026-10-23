@@ -1,15 +1,23 @@
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using SharpDX.Direct2D1;
 
-public class LoadingEvent(ContentManager content) : Event
+public class LoadingEvent(
+    ContentManager content,
+    ResourceManager resourceManager,
+    TextureManager textureManager) : Event
 {
     public ContentManager content = content;
+    public ResourceManager ResourceManager { get; } = resourceManager;
+    public TextureManager TextureManager { get; } = textureManager;
 }
 
-public class RegisteringEvent(ContentManager content) : LoadingEvent(content);
+public class RegisteringEvent(
+    ContentManager content,
+    ResourceManager resourceManager,
+    TextureManager textureManager)
+    : LoadingEvent(content, resourceManager, textureManager);
 
-public class TextureLoadingEvent(ContentManager content, TextureManager manager) : LoadingEvent(content)
-{
-    public TextureManager TextureManager = manager;
-}
+public class TextureLoadingEvent(
+    ContentManager content,
+    ResourceManager resourceManager,
+    TextureManager textureManager)
+    : LoadingEvent(content, resourceManager, textureManager);

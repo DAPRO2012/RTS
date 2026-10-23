@@ -1,16 +1,57 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-public class TextureManager
+public class TextureManager : IDisposable
 {
-    private Texture2D _blockAtlas;
-    private Dictionary<Identifier, Dictionary<Identifier, TextureRegion>> _regions = new();
+    private readonly Dictionary<Identifier, Dictionary<Identifier, TextureRegion>> _regions = new();
+    private readonly List<Texture2D> _atlases = [];
 
-    public void LoadContent(GraphicsDevice graphics, Texture2D loadedAtlas)
+    public void LoadContent(ResourceManager resources, GraphicsDevice device)
     {
-        _blockAtlas = loadedAtlas;
+        Dictionary<Identifier, Dictionary<Identifier, Texture>> textures = [];
+
+        try
+        {
+            foreach (Resource resource in resources.ListResources(ResourceType.Assets))
+            {
+                string extension = System.IO.Path.GetExtension(resource.Id.Path);
+                if (!IsTextureExtension(extension))
+                    continue;
+
+                string resourcePath = resource.Id.Path;
+                int separator = resourcePath.IndexOf('/');
+                if (separator <= 0 || separator == resourcePath.Length - 1)
+                    throw new InvalidDataException($"Texture resource must include a registry and texture path: {resource.Id}");
+
+                Identifier registryId = Identifier.fromNamespaceAndPath(
+                    resource.Id.Namespace,
+                    resourcePath[..separator]);
+                string texturePath = System.IO.Path.ChangeExtension(resourcePath[(separator + 1)..], null)
+                    .Replace('\\', '/');
+                Identifier textureId = Identifier.fromNamespaceAndPath(resource.Id.Namespace, texturePath);
+
+                if (!textures.TryGetValue(registryId, out Dictionary<Identifier, Texture> registryTextures))
+                {
+                    registryTextures = [];
+                    textures.Add(registryId, registryTextures);
+                }
+
+                if (!registryTextures.TryAdd(textureId, new Texture(resource)))
+                    throw new InvalidDataException($"Multiple texture files resolve to {registryId}/{textureId}.");
+            }
+
+            foreach (KeyValuePair<Identifier, Dictionary<Identifier, Texture>> registryTextures in textures)
+                CreateAtlas(registryTextures.Key, registryTextures.Value, device);
+        }
+        finally
+        {
+            foreach (Texture texture in textures.Values.SelectMany(registryTextures => registryTextures.Values))
+                texture.GetTexture2D().Dispose();
+        }
     }
 
     public TextureRegion GetRegion(Identifier registryId, Identifier id)
@@ -21,6 +62,29 @@ public class TextureManager
         }
             
         return null;
+    }
+
+    public TextureRegion GetRegion(Identifier resourceId)
+    {
+        string resourcePath = resourceId.GetPath();
+        int separator = resourcePath.IndexOf('/');
+        if (separator <= 0 || separator == resourcePath.Length - 1)
+            return null;
+
+        Identifier registryId = Identifier.fromNamespaceAndPath(
+            resourceId.GetNamespace(),
+            resourcePath[..separator]);
+        string texturePath = System.IO.Path.ChangeExtension(resourcePath[(separator + 1)..], null)
+            .Replace('\\', '/');
+        Identifier textureId = Identifier.fromNamespaceAndPath(resourceId.GetNamespace(), texturePath);
+
+        return GetRegion(registryId, textureId);
+    }
+
+    public TextureRegion GetRequiredRegion(Identifier resourceId)
+    {
+        return GetRegion(resourceId)
+            ?? throw new KeyNotFoundException($"Texture atlas region not found: {resourceId}");
     }
 
     public Texture2D CreateAtlas(Identifier registryId, Dictionary<Identifier, Texture> textures, GraphicsDevice device)
@@ -43,47 +107,69 @@ public class TextureManager
 
         int totalTextures = textures.Count;
         int columns = Math.Min(totalTextures, AtlasTextureColumns);
-        int rows = (int)Math.Ceiling((float)totalTextures / AtlasTextureColumns);
+        int rows = (int)Math.Ceiling((float)totalTextures / columns);
 
         int atlasWidth = columns * tileWidth;
         int atlasHeight = rows * tileHeight;
 
         RenderTarget2D atlas = new RenderTarget2D(device, atlasWidth, atlasHeight);
-
-        device.SetRenderTarget(atlas);
-        device.Clear(Color.Transparent);
-
-        using (SpriteBatch sb = new SpriteBatch(device))
+        try
         {
-            sb.Begin(samplerState: SamplerState.PointClamp);
+            device.SetRenderTarget(atlas);
+            device.Clear(Color.Transparent);
 
-            int currentIndex = 0;
-            foreach (KeyValuePair<Identifier, Texture> item in textures)
+            using (SpriteBatch sb = new SpriteBatch(device))
             {
-                int currentColumn = currentIndex % AtlasTextureColumns;
-                int currentRow = currentIndex / AtlasTextureColumns;
+                sb.Begin(samplerState: SamplerState.PointClamp);
 
-                Rectangle destinationRect = new Rectangle(
-                    currentColumn * tileWidth,
-                    currentRow * tileHeight,
-                    tileWidth,
-                    tileHeight
-                );
+                int currentIndex = 0;
+                foreach (KeyValuePair<Identifier, Texture> item in textures)
+                {
+                    int currentColumn = currentIndex % columns;
+                    int currentRow = currentIndex / columns;
 
-                item.Value.Draw(sb, destinationRect, Color.White);
+                    Rectangle destinationRect = new Rectangle(
+                        currentColumn * tileWidth,
+                        currentRow * tileHeight,
+                        tileWidth,
+                        tileHeight
+                    );
 
-                _regions[registryId][item.Key] = new TextureRegion(atlas, destinationRect);
+                    item.Value.Draw(sb, destinationRect, Color.White);
+                    _regions[registryId][item.Key] = new TextureRegion(atlas, destinationRect);
 
-                currentIndex++;
+                    currentIndex++;
+                }
+
+                sb.End();
             }
-
-            sb.End();
+        }
+        catch
+        {
+            atlas.Dispose();
+            throw;
+        }
+        finally
+        {
+            device.SetRenderTarget(null);
         }
 
-        device.SetRenderTarget(null);
-
-        _blockAtlas = atlas;
+        _atlases.Add(atlas);
         return atlas;
+    }
+
+    private static bool IsTextureExtension(string extension) =>
+        extension.Equals(".png", StringComparison.OrdinalIgnoreCase)
+        || extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
+        || extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase)
+        || extension.Equals(".bmp", StringComparison.OrdinalIgnoreCase);
+
+    public void Dispose()
+    {
+        foreach (Texture2D atlas in _atlases)
+            atlas.Dispose();
+        _atlases.Clear();
+        _regions.Clear();
     }
 }
 
@@ -91,6 +177,12 @@ public class TextureRegion
 {
     public Texture2D Atlas { get; }
     public Rectangle SourceRect { get; }
+
+    public void Draw(SpriteBatch spriteBatch, Rectangle destination, Color color) =>
+        spriteBatch.Draw(Atlas, destination, SourceRect, color);
+
+    public void Draw(SpriteBatch spriteBatch, Vector2 position, Color color) =>
+        spriteBatch.Draw(Atlas, position, SourceRect, color);
 
     public TextureRegion(Texture2D atlas, Rectangle sourceRect)
     {

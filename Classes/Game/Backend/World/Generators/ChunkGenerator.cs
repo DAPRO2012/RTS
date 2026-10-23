@@ -23,11 +23,22 @@ public class ChunkGenerator : IChunkGenerator
         DataResult<Ground[][]> groundResult =  _groundGen.Generate(gridPos);
         //DataResult<Material[][]> materialResult =  _materialGen.Generate(gridPos);
 
-        Ground[][] groundPartial = groundResult.ResultOrPartial().GetValueOrDefault();
+        Optional<Ground[][]> groundPartialResult = groundResult.ResultOrPartial();
+        if (!groundPartialResult.HasValue())
+            return new DataResult<Chunk>.Error<Chunk>(
+                "Ground generation failed.",
+                Optional.Empty<Chunk>());
+
+        Ground[][] groundPartial = groundPartialResult.Value;
         //Material[][] materialPartial = materialResult.ResultOrPartial().GetValueOrDefault();
         for (int x = 0; x < Chunk.ChunkSize; x++)
         for (int y = 0; y < Chunk.ChunkSize; y++)
         {
+            if (groundPartial[x][y] == null)
+                return new DataResult<Chunk>.Error<Chunk>(
+                    "Ground generation produced a null tile.",
+                    Optional.Empty<Chunk>());
+
             groundTiles[x][y] = BuiltInRegistries.GROUNDS.GetNumericId(groundPartial[x][y]);
             //materialTiles[x][y] = BuiltInRegistries.MATERIALS.GetNumericId(materialPartial[x][y]);
         }

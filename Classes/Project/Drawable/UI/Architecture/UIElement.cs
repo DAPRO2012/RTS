@@ -29,7 +29,8 @@ public class UIElement(string name) : IElement
     public Rectangle BoundingBox => new(GetScreenPosition(), Size);
 
     //Graphics
-    public Texture? BackgroundTexture = null;
+    public Identifier? BackgroundTextureId = null;
+    public TextureManager? TextureManager = null;
     public Color BackgroundColor = Color.White;
 
     public bool IsActive = true;
@@ -50,9 +51,7 @@ public class UIElement(string name) : IElement
         MouseState ms = Mouse.GetState();
         IsHovering = BoundingBox.Contains(ms.Position) && IsActive;
 
-        var LeftBtn = Main.MouseManager.LEFT;
-
-        if (IsHovering && LeftBtn.Current == ButtonState.Released && LeftBtn.Previous == ButtonState.Pressed)
+        if (IsHovering && InputManager.Instance.LeftClick.ConsumeClick())
         {
             OnClicked();
         }
@@ -64,7 +63,12 @@ public class UIElement(string name) : IElement
     protected virtual void CustomDraw(GameTime gameTime, SpriteBatch spriteBatch) {}
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-        BackgroundTexture?.Draw(spriteBatch, BoundingBox, BackgroundColor);
+        if (BackgroundTextureId is not null
+            && TextureManager?.GetRegion(BackgroundTextureId) is TextureRegion backgroundTexture)
+        {
+            backgroundTexture.Draw(spriteBatch, BoundingBox, BackgroundColor);
+        }
+
         CustomDraw(gameTime, spriteBatch);
 
         _children.ForEach((c) => c.Draw(gameTime, spriteBatch));
