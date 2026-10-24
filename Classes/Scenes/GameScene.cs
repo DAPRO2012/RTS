@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
@@ -5,7 +7,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using RTS;
 
-public class GameScene(ContentManager content, TextureManager textureManager) : Scene(content)
+public class GameScene(ContentManager content, TextureManager textureManager, ScreenManager screenManager) : Scene(content, screenManager)
 {
     Level lvl = new("test");
 
@@ -15,9 +17,7 @@ public class GameScene(ContentManager content, TextureManager textureManager) : 
 
     private readonly TextureManager _textureManager = textureManager;
 
-    public override void Initialize(ContentManager content)
-    {
-    }
+    public override void Initialize(ContentManager content) {}
 
     public override void Update(GameTime gameTime)
     {
@@ -58,7 +58,6 @@ public class GameScene(ContentManager content, TextureManager textureManager) : 
         spriteBatch.GraphicsDevice.Clear(Color.White);
 
         lvl.BuildCache(spriteBatch, _textureManager);
-
         spriteBatch.Begin(transformMatrix:Camera.ScaleMatrix * Camera.TranslationMatrix);
             lvl.Draw(spriteBatch, _textureManager);
         spriteBatch.End();

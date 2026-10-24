@@ -13,6 +13,9 @@ public class Pipeline<T> : IPipeline<T> where T : IEndable
                 step(e);
         });
 
-    public void WithStep(Action<T> step) =>
+    public Pipeline<T> WithStep(Action<T> step)
+    {
         _steps.Add(step);
+        return this;
+    }
 }

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using RTS;
 
-public class MenuScene(ContentManager content, TextureManager textureManager) : Scene(content)
+public class MenuScene(ContentManager content, TextureManager textureManager, ScreenManager manager) : Scene(content, manager)
 {
     private readonly Identifier _gradientId = Identifier.fromDefaultNamespace("textures/scenes/menu/menu_grad.png");
     public Font pixelFont;
@@ -16,7 +16,6 @@ public class MenuScene(ContentManager content, TextureManager textureManager) : 
         BackgroundTextureId = Identifier.fromDefaultNamespace("textures/blank.png"),
         TextureManager = textureManager,
         BackgroundColor = Color.Black,
-        OnClicked = () => Set(Identifier.fromDefaultNamespace("game")),
 
         Getter = () => "Continue"
     };
@@ -26,6 +25,7 @@ public class MenuScene(ContentManager content, TextureManager textureManager) : 
     {
         pixelFont = new(Identifier.fromDefaultNamespace("fonts/Silkscreen-Regular.ttf"), content);
 
+        ContinueButton.OnClicked = () => Set(Identifier.fromDefaultNamespace("game"), ScreenManager);
         ContinueButton.Font = pixelFont;
         drawables.Add(ContinueButton);
     }

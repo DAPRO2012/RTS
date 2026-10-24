@@ -1,12 +1,14 @@
-public abstract class SceneEvent : Event
+public abstract class SceneEvent(ScreenManager manager) : Event
 {
     public Scene GetScene() => Scene.Get();
-    public void SetScene(Identifier id) => Scene.Set(id);
+    public void SetScene(Identifier id) => Scene.Set(id, Manager);
+
+    public ScreenManager Manager { get; private set; } = manager;
+
 }
 
-public class OnSceneChangeEvent(Scene to) : SceneEvent
+public class SceneChangeEvent(Scene to, ScreenManager manager) : SceneEvent(manager)
 {
-    public bool AllowChange = true;
     private readonly Scene _changeTo = to;
     public Scene GetChangingToScene() => _changeTo;
 }

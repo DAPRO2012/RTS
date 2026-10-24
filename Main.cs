@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -20,6 +21,7 @@ public class Main : Game
 
     private readonly TextureManager _textureManager = new();
     private readonly ResourceManager _resourceManager;
+    private readonly ScreenManager _screenManager = new();
 
     //Pipelines
     private readonly Pipeline<RegisteringEvent> _registryPipeline = new();
@@ -76,9 +78,9 @@ public class Main : Game
         _texturePipeline.WithStep(e => e.TextureManager.LoadContent(e.ResourceManager, GetDevice()));
 
         _loadingPipeline.WithStep(e => _registryPipeline.Run(
-            new RegisteringEvent(e.content, e.ResourceManager, e.TextureManager)));
+            new RegisteringEvent(e.content, e.ResourceManager, e.TextureManager, e.ScreenManager)));
         _loadingPipeline.WithStep(e => _texturePipeline.Run(
-            new TextureLoadingEvent(e.content, e.ResourceManager, e.TextureManager)));
+            new TextureLoadingEvent(e.content, e.ResourceManager, e.TextureManager, e.ScreenManager)));
 
         base.Initialize();
     }
@@ -87,7 +89,7 @@ public class Main : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         
-        _loadingPipeline.Run(new LoadingEvent(Content, _resourceManager, _textureManager));
+        _loadingPipeline.Run(new LoadingEvent(Content, _resourceManager, _textureManager, _screenManager));
     }
 
     protected override void Update(GameTime gameTime)
@@ -100,6 +102,7 @@ public class Main : Game
             Exit();
 
         Scene.UpdateScene(gameTime);
+        _screenManager.Update(gameTime);
         
 
         base.Update(gameTime);
@@ -110,6 +113,8 @@ public class Main : Game
         GraphicsDevice.Clear(Color.Black);
 
         Scene.DrawScene(gameTime, _spriteBatch);
+        _screenManager.Draw(gameTime, _spriteBatch);
+
 
         base.Draw(gameTime);
     }
