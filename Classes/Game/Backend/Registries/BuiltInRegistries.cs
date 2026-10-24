@@ -10,6 +10,7 @@ public static class BuiltInRegistries
     public static readonly Registry<Structure> STRUCTURES = RegisterSimple<Structure>("structure");
     public static readonly Registry<Material> MATERIALS = RegisterSimple<Material>("material");
     public static readonly Registry<Ground> GROUNDS = RegisterSimple<Ground>("ground");
+    public static readonly Registry<BiomeDefinition> BIOMES = RegisterSimple<BiomeDefinition>("biome");
 
     internal static Registry<T> RegisterSimple<T>(string name) => InternalRegister<T>(Identifier.fromDefaultNamespace(name));
     private static Registry<T> InternalRegister<T>(Identifier id) {

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -50,7 +51,9 @@ public class GameScene(ContentManager content, TextureManager textureManager, Sc
 
         foreach (var point in new List<Point>(lvl.LoadedChunks.Keys))
             if (!loadPoints.Contains(point)) lvl.UnloadChunk(point);
-        loadPoints.ForEach(point => lvl.LoadChunk(point));
+        foreach (Point point in loadPoints)
+            if (!lvl.IsLoaded(point))
+                lvl.LoadChunk(point);
     }
 
     public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)

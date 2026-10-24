@@ -12,5 +12,5 @@ public abstract class LayerGenerator<T> : ILayerGenerator<T>
         _noise.SetSeed(seed);
     }
 
-    public abstract DataResult<T[][]> Generate(Point gridPos);
+    public abstract DataResult<T[][]> Generate(Point gridPos, int[][][] partialChunk);
 }

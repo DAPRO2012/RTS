@@ -11,6 +11,8 @@ public class Registry<T>
     private bool _isFrozen = false;
     private int _nextAvailableId = 1;
 
+    public IReadOnlyDictionary<Identifier, T> Entries => _entries;
+
     internal int Register(Identifier id, T value)
     {
         if (_isFrozen) 

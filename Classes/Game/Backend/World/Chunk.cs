@@ -7,7 +7,7 @@ using SharpDX.Win32;
 
 public class Chunk
 {
-    public const int ChunkSize = 32;
+    public const int ChunkSize = 64;
     public const int TileSize = 32;
     public const int LayerCount = 3;
 
@@ -17,6 +17,7 @@ public class Chunk
     private RenderTarget2D _cachedTexture;
 
     public bool IsDirty { get; set; } = true;
+    public bool IsChanged { get; set; } = false;
     private bool _isDisposed = false;
 
     private static int[][][] CreateEmptyTiles()
@@ -53,7 +54,8 @@ public class Chunk
     public void SetTile(int x, int y, WorldLayer layer, Identifier tileID)
     {
         _tiles[(int)layer][x][y] = BuiltInRegistries.STRUCTURES.GetNumericId(tileID);
-        IsDirty = true; 
+        IsDirty = true;
+        IsChanged = true; 
     }
 
     public int GetTile(int x, int y, WorldLayer layer)

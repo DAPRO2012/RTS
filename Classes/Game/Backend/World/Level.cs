@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RTS;
 
-public class Level(string worldName)
+public class Level(string worldName, int seed = 1)
     {
         protected readonly static SavedStorage WorldStorage = new(new(AppContext.BaseDirectory, "data", "saves"));
         private readonly string _worldName = worldName;
-        private readonly ChunkGenerator _generator = new();
+        private readonly ChunkGenerator _generator = new(seed);
 
         protected Dictionary<Point, Chunk> loadedChunks = [];
         public ReadOnlyDictionary<Point, Chunk> LoadedChunks => loadedChunks.AsReadOnly();
@@ -17,9 +19,12 @@ public class Level(string worldName)
         public Chunk GetChunk(Point point) => loadedChunks[point];
         public bool IsLoaded(Point point) => loadedChunks.ContainsKey(point);
 
+        private Path GetChunkFile(Point pos) =>
+            new(_worldName, "chunks", FormattableString.Invariant($"chunk_{pos.X}_{pos.Y}.dat"));
+
         public DataResult<Chunk> LoadChunk(Point pos)
         {
-            Path chunkFile = new(_worldName, "chunks", $"{pos.X}-{pos.Y}.dat");
+            Path chunkFile = GetChunkFile(pos);
             DataResult<Chunk> chunkResult;
             if (loadedChunks.ContainsKey(pos))
                 chunkResult = new DataResult<Chunk>.Success<Chunk>(GetChunk(pos));
@@ -42,14 +47,15 @@ public class Level(string worldName)
         {
             if (loadedChunks.TryGetValue(pos, out Chunk chunk))
             {
-                Path chunkFile = new(_worldName, "chunks", $"{pos.X}-{pos.Y}.dat");
+                Path chunkFile = GetChunkFile(pos);
 
                 ChunkEvent.Unload unloadEvent = new ChunkEvent.Unload(this, chunk);
                 Main.EVENT_BUS.Publish(unloadEvent);
                 if (!unloadEvent.IsEventEnding())
                 {
-                    WorldStorage.WriteCodecToDisk(chunkFile, chunk, Chunk.CODEC);
+                    if (chunk.IsChanged) WorldStorage.WriteCodecToDisk(chunkFile, chunk, Chunk.CODEC);
                     loadedChunks.Remove(pos);
+                    chunk.Dispose();
                 }
             }
             return chunk;
@@ -57,7 +63,7 @@ public class Level(string worldName)
 
         public void BuildCache(SpriteBatch sb, TextureManager tm)
         {
-            foreach (Chunk chunk in loadedChunks.Values)
+            foreach (Chunk chunk in loadedChunks.Values.AsEnumerable())
                 chunk.BuildCache(sb, tm);
         }
 

@@ -18,21 +18,8 @@ public class TextureManager : IDisposable
         {
             foreach (Resource resource in resources.ListResources(ResourceType.Assets))
             {
-                string extension = System.IO.Path.GetExtension(resource.Id.Path);
-                if (!IsTextureExtension(extension))
+                if (!TryGetTextureIds(resource.Id, out Identifier registryId, out Identifier textureId))
                     continue;
-
-                string resourcePath = resource.Id.Path;
-                int separator = resourcePath.IndexOf('/');
-                if (separator <= 0 || separator == resourcePath.Length - 1)
-                    throw new InvalidDataException($"Texture resource must include a registry and texture path: {resource.Id}");
-
-                Identifier registryId = Identifier.fromNamespaceAndPath(
-                    resource.Id.Namespace,
-                    resourcePath[..separator]);
-                string texturePath = System.IO.Path.ChangeExtension(resourcePath[(separator + 1)..], null)
-                    .Replace('\\', '/');
-                Identifier textureId = Identifier.fromNamespaceAndPath(resource.Id.Namespace, texturePath);
 
                 if (!textures.TryGetValue(registryId, out Dictionary<Identifier, Texture> registryTextures))
                 {
@@ -158,11 +145,34 @@ public class TextureManager : IDisposable
         return atlas;
     }
 
-    private static bool IsTextureExtension(string extension) =>
-        extension.Equals(".png", StringComparison.OrdinalIgnoreCase)
-        || extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
-        || extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase)
-        || extension.Equals(".bmp", StringComparison.OrdinalIgnoreCase);
+    public static bool TryGetTextureIds(
+        ResourceId resourceId,
+        out Identifier registryId,
+        out Identifier textureId)
+    {
+        string resourcePath = resourceId.Path;
+        string extension = System.IO.Path.GetExtension(resourcePath);
+        if (!extension.Equals(".png", StringComparison.OrdinalIgnoreCase)
+            && !extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
+            && !extension.Equals(".jpeg", StringComparison.OrdinalIgnoreCase)
+            && !extension.Equals(".bmp", StringComparison.OrdinalIgnoreCase))
+        {
+            registryId = null;
+            textureId = null;
+            return false;
+        }
+
+        int separator = resourcePath.IndexOf('/');
+        if (separator <= 0 || separator == resourcePath.Length - 1)
+            throw new InvalidDataException(
+                $"Texture resource must include a registry and texture path: {resourceId}");
+
+        registryId = Identifier.fromNamespaceAndPath(resourceId.Namespace, resourcePath[..separator]);
+        string texturePath = System.IO.Path.ChangeExtension(resourcePath[(separator + 1)..], null)
+            .Replace('\\', '/');
+        textureId = Identifier.fromNamespaceAndPath(resourceId.Namespace, texturePath);
+        return true;
+    }
 
     public void Dispose()
     {
