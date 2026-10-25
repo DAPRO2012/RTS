@@ -10,13 +10,13 @@ public static class BiomeDataLoader
     {
         foreach (Resource resource in resources.ListResources(ResourceType.Data))
         {
-            string path = resource.Id.Path;
+            string path = resource.Id.GetPath();
             if (!path.StartsWith(BiomePathPrefix, StringComparison.Ordinal)
                 || !path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             Identifier biomeId = Identifier.fromNamespaceAndPath(
-                resource.Id.Namespace,
+                resource.Id.GetNamespace(),
                 System.IO.Path.ChangeExtension(path[BiomePathPrefix.Length..], null));
 
             using Stream stream = resource.Open();
@@ -28,7 +28,7 @@ public static class BiomeDataLoader
             catch (JsonException exception)
             {
                 throw new InvalidDataException(
-                    $"Invalid JSON in biome definition '{resource.Id.Namespace}:{resource.Id.Path}'.",
+                    $"Invalid JSON in biome definition '{resource.Id.GetNamespace()}:{resource.Id.GetPath()}'.",
                     exception);
             }
 
@@ -44,7 +44,7 @@ public static class BiomeDataLoader
                 $"No biome definitions found under data/<namespace>/{BiomePathPrefix}.");
     }
 
-    private static BiomeDefinition Decode(JsonElement root, ResourceId resourceId)
+    private static BiomeDefinition Decode(JsonElement root, Identifier resourceId)
     {
         if (root.ValueKind != JsonValueKind.Object)
             throw InvalidDefinition(resourceId, "Expected a JSON object.");
@@ -94,7 +94,7 @@ public static class BiomeDataLoader
         return new BiomeDefinition(surfaceGround, temperature, humidity, features);
     }
 
-    private static string RequiredString(JsonElement element, string property, ResourceId resourceId)
+    private static string RequiredString(JsonElement element, string property, Identifier resourceId)
     {
         if (!element.TryGetProperty(property, out JsonElement value)
             || value.ValueKind != JsonValueKind.String
@@ -104,7 +104,7 @@ public static class BiomeDataLoader
         return value.GetString()!;
     }
 
-    private static float RequiredFloat(JsonElement element, string property, ResourceId resourceId)
+    private static float RequiredFloat(JsonElement element, string property, Identifier resourceId)
     {
         if (!element.TryGetProperty(property, out JsonElement value)
             || value.ValueKind != JsonValueKind.Number
@@ -116,7 +116,7 @@ public static class BiomeDataLoader
         return number;
     }
 
-    private static Identifier ParseIdentifier(string value, ResourceId resourceId, string property)
+    private static Identifier ParseIdentifier(string value, Identifier resourceId, string property)
     {
         string[] parts = value.Split(':', 2);
         if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
@@ -125,6 +125,6 @@ public static class BiomeDataLoader
         return Identifier.fromNamespaceAndPath(parts[0], parts[1]);
     }
 
-    private static InvalidDataException InvalidDefinition(ResourceId resourceId, string message) =>
-        new($"Invalid biome definition '{resourceId.Namespace}:{resourceId.Path}': {message}");
+    private static InvalidDataException InvalidDefinition(Identifier resourceId, string message) =>
+        new($"Invalid biome definition '{resourceId.GetNamespace()}:{resourceId.GetPath()}': {message}");
 }

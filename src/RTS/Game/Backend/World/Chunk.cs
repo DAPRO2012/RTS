@@ -8,7 +8,7 @@ using SharpDX.Win32;
 public class Chunk
 {
     public const int ChunkSize = 64;
-    public const int TileSize = 32;
+    public const int TileSize = 4;
     public const int LayerCount = 3;
 
     public Point GridPosition { get; private set; }
@@ -101,13 +101,10 @@ public class Chunk
 
                     TextureRegion tileTexture = textures.GetRegion(registryId, blockId);
 
-                    if (tileTexture != null)
-                    {
-                        tileTexture.Draw(
+                    tileTexture?.Draw(
                             spriteBatch,
                             new Vector2(x * TileSize, y * TileSize),
                             Color.White);
-                    }
                 }
             }
         }

@@ -146,11 +146,11 @@ public class TextureManager : IDisposable
     }
 
     public static bool TryGetTextureIds(
-        ResourceId resourceId,
+        Identifier resourceId,
         out Identifier registryId,
         out Identifier textureId)
     {
-        string resourcePath = resourceId.Path;
+        string resourcePath = resourceId.GetPath();
         string extension = System.IO.Path.GetExtension(resourcePath);
         if (!extension.Equals(".png", StringComparison.OrdinalIgnoreCase)
             && !extension.Equals(".jpg", StringComparison.OrdinalIgnoreCase)
@@ -167,10 +167,10 @@ public class TextureManager : IDisposable
             throw new InvalidDataException(
                 $"Texture resource must include a registry and texture path: {resourceId}");
 
-        registryId = Identifier.fromNamespaceAndPath(resourceId.Namespace, resourcePath[..separator]);
+        registryId = Identifier.fromNamespaceAndPath(resourceId.GetNamespace(), resourcePath[..separator]);
         string texturePath = System.IO.Path.ChangeExtension(resourcePath[(separator + 1)..], null)
             .Replace('\\', '/');
-        textureId = Identifier.fromNamespaceAndPath(resourceId.Namespace, texturePath);
+        textureId = Identifier.fromNamespaceAndPath(resourceId.GetNamespace(), texturePath);
         return true;
     }
 
@@ -191,8 +191,8 @@ public class TextureRegion
     public void Draw(SpriteBatch spriteBatch, Rectangle destination, Color color) =>
         spriteBatch.Draw(Atlas, destination, SourceRect, color);
 
-    public void Draw(SpriteBatch spriteBatch, Vector2 position, Color color) =>
-        spriteBatch.Draw(Atlas, position, SourceRect, color);
+    public void Draw(SpriteBatch spriteBatch, Vector2 position, Color color, Point? size = null) =>
+        spriteBatch.Draw(Atlas, new Rectangle(position.ToPoint(), size ?? new Point(Chunk.TileSize)), SourceRect, color);
 
     public TextureRegion(Texture2D atlas, Rectangle sourceRect)
     {

@@ -8,25 +8,23 @@ public enum ResourceType
     Data
 }
 
-public readonly record struct ResourceId(string Namespace, string Path);
-
 public interface IResourcePack : IDisposable
 {
     string Name { get; }
 
     IEnumerable<string> GetNamespaces(ResourceType type);
 
-    bool Contains(ResourceType type, ResourceId id);
+    bool Contains(ResourceType type, Identifier id);
 
-    Stream Open(ResourceType type, ResourceId id);
+    Stream Open(ResourceType type, Identifier id);
 
-    IEnumerable<ResourceId> ListResources(
+    IEnumerable<Identifier> ListResources(
         ResourceType type,
         string namespaceName,
         string pathPrefix);
 }
 
-public sealed record Resource(IResourcePack Source, ResourceType Type, ResourceId Id)
+public sealed record Resource(IResourcePack Source, ResourceType Type, Identifier Id)
 {
     public Stream Open() => Source.Open(Type, Id);
 }

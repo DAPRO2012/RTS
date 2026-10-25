@@ -7,30 +7,7 @@ public class LoadingEventSubscriber
     [SubscribeEvent]
     public void Registering(RegisteringEvent e)
     {
-        BuiltInRegistries.MATERIALS.Register(Identifier.fromDefaultNamespace("log"), new Material());
-
         IReadOnlyList<Resource> assets = e.ResourceManager.ListResources(ResourceType.Assets);
-        Identifier[] builtInGrounds =
-        [
-            Identifier.fromDefaultNamespace("grass"),
-            Identifier.fromDefaultNamespace("stone"),
-            Identifier.fromDefaultNamespace("sand")
-        ];
-
-        foreach (Identifier builtInGround in builtInGrounds)
-        {
-            foreach (Resource resource in assets)
-            {
-                if (TextureManager.TryGetTextureIds(resource.Id, out Identifier registryId, out Identifier textureId)
-                    && registryId.GetPath() == "ground"
-                    && textureId.Equals(builtInGround))
-                {
-                    BuiltInRegistries.GROUNDS.Register(textureId, new Ground());
-                    break;
-                }
-            }
-        }
-
         foreach (Resource resource in assets)
         {
             if (!TextureManager.TryGetTextureIds(resource.Id, out Identifier registryId, out Identifier textureId))
@@ -41,7 +18,6 @@ public class LoadingEventSubscriber
             else if (registryId.GetPath() == "material" && BuiltInRegistries.MATERIALS.Get(textureId) == null)
                 BuiltInRegistries.MATERIALS.Register(textureId, new Material());
         }
-
         BiomeDataLoader.Load(e.ResourceManager);
 
         BuiltInRegistries.SCENES.Register(Identifier.fromDefaultNamespace("menu"), new MenuScene(e.content, e.TextureManager, e.ScreenManager));

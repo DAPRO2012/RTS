@@ -45,7 +45,7 @@ public sealed class BiomeGenerator
         noise.SetSeed(seed);
         noise.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
         noise.SetFractalType(FastNoiseLite.FractalType.FBm);
-        noise.SetFrequency(0.002f);
+        noise.SetFrequency(0.1f);
     }
 
     private static BiomeDefinition FindClosestBiome(

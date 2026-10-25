@@ -10,7 +10,7 @@ public class Texture : DrawableResource
     {
         Resource resource = resources.GetResource(
             ResourceType.Assets,
-            new ResourceId(id.GetNamespace(), id.GetPath()));
+            id);
         if (resource == null)
             throw new FileNotFoundException($"Texture resource not found: {id}");
 

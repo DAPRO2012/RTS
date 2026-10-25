@@ -13,7 +13,7 @@ public class Registry<T>
 
     public IReadOnlyDictionary<Identifier, T> Entries => _entries;
 
-    internal int Register(Identifier id, T value)
+    internal T Register(Identifier id, T value)
     {
         if (_isFrozen) 
             throw new InvalidOperationException($"Registry {GetRegistryIdentifier()} is frozen! Cannot register {id}.");
@@ -27,7 +27,7 @@ public class Registry<T>
         _idToNumeric[id] = numericId;
         _numericToId[numericId] = id;
 
-        return numericId;
+        return value;
     }
 
     public int Size() => _entries.Count;
