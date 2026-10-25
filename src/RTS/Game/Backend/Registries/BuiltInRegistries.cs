@@ -5,12 +5,15 @@ public static class BuiltInRegistries
 {
     private static readonly Dictionary<Identifier, object> _registries = [];
 
+
     public static readonly Registry<Scene> SCENES = RegisterSimple<Scene>("scene");
 
     public static readonly Registry<Structure> STRUCTURES = RegisterSimple<Structure>("structure");
     public static readonly Registry<Material> MATERIALS = RegisterSimple<Material>("material");
     public static readonly Registry<Ground> GROUNDS = RegisterSimple<Ground>("ground");
     public static readonly Registry<BiomeDefinition> BIOMES = RegisterSimple<BiomeDefinition>("biome");
+
+    public static readonly Registry<EntityType<Entity>> ENTITY_TYPES = RegisterSimple<EntityType<Entity>>("entity_type");
 
     internal static Registry<T> RegisterSimple<T>(string name) => InternalRegister<T>(Identifier.fromDefaultNamespace(name));
     private static Registry<T> InternalRegister<T>(Identifier id) {
