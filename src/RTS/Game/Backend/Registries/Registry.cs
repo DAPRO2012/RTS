@@ -47,14 +47,14 @@ public class Registry<T>
         return default;
     }
 
-    public int GetNumericId(Identifier id)
+    public int GetId(Identifier id)
     {
         if (id != null && _idToNumeric.TryGetValue(id, out int numericId))
             return numericId;
             
         return 0;
     }
-    public int GetNumericId(T item)
+    public int GetId(T item)
     {
         Identifier id = GetKey(item);
         if (id != null && _idToNumeric.TryGetValue(id, out int numericId))
@@ -63,7 +63,7 @@ public class Registry<T>
         return 0;
     }
 
-    public Identifier GetIdentifier(int numericId)
+    public Identifier ById(int numericId)
     {
         if (_numericToId.TryGetValue(numericId, out var id))
             return id;

@@ -50,7 +50,7 @@ public class ChunkGenerator : IChunkGenerator
                     "Biome generation produced a null biome.",
                     Optional.Empty<Chunk>());
 
-            int groundId = BuiltInRegistries.GROUNDS.GetNumericId(biome.SurfaceGround);
+            int groundId = BuiltInRegistries.GROUNDS.GetId(biome.SurfaceGround);
             if (groundId == 0)
                 return new DataResult<Chunk>.Error<Chunk>(
                     $"Biome references an unregistered surface ground: {biome.SurfaceGround}.",
@@ -78,7 +78,7 @@ public class ChunkGenerator : IChunkGenerator
             if (material == null)
                 continue;
 
-            int materialId = BuiltInRegistries.MATERIALS.GetNumericId(material);
+            int materialId = BuiltInRegistries.MATERIALS.GetId(material);
             if (materialId == 0)
                 return new DataResult<Chunk>.Error<Chunk>(
                     "Material generation produced an unregistered tile.",

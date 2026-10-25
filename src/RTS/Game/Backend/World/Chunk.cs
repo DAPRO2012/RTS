@@ -53,7 +53,7 @@ public class Chunk
 
     public void SetTile(int x, int y, WorldLayer layer, Identifier tileID)
     {
-        _tiles[(int)layer][x][y] = BuiltInRegistries.STRUCTURES.GetNumericId(tileID);
+        _tiles[(int)layer][x][y] = BuiltInRegistries.STRUCTURES.GetId(tileID);
         IsDirty = true;
         IsChanged = true; 
     }
@@ -86,17 +86,17 @@ public class Chunk
                     if (l == (int)WorldLayer.Structure)
                     {
                         registryId = BuiltInRegistries.STRUCTURES.GetRegistryIdentifier();
-                        blockId = BuiltInRegistries.STRUCTURES.GetIdentifier(tileId);
+                        blockId = BuiltInRegistries.STRUCTURES.ById(tileId);
                     }
                     else if (l == (int)WorldLayer.Material)
                     {
                         registryId = BuiltInRegistries.MATERIALS.GetRegistryIdentifier();
-                        blockId = BuiltInRegistries.MATERIALS.GetIdentifier(tileId);
+                        blockId = BuiltInRegistries.MATERIALS.ById(tileId);
                     }
                     else
                     {
                         registryId = BuiltInRegistries.GROUNDS.GetRegistryIdentifier();
-                        blockId = BuiltInRegistries.GROUNDS.GetIdentifier(tileId);
+                        blockId = BuiltInRegistries.GROUNDS.ById(tileId);
                     }
 
                     TextureRegion tileTexture = textures.GetRegion(registryId, blockId);
