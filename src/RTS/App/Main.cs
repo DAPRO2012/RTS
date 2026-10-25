@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -33,6 +34,7 @@ public class Main : Microsoft.Xna.Framework.Game
     
     public Main()
     {
+        Thread.CurrentThread.Name = "Main";
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         _resourceManager = new ResourceManager([
@@ -61,6 +63,18 @@ public class Main : Microsoft.Xna.Framework.Game
 
     protected override void Initialize()
     {
+        LoggerInfo info = new LoggerInfo();
+        LoggerDebug debug = new LoggerDebug();
+        LoggerWarn warn = new LoggerWarn();
+        LoggerError error = new LoggerError();
+
+        info.SetNextLogger(debug);
+        debug.SetNextLogger(warn);
+        warn.SetNextLogger(error);
+        LogUtils.SetLogger(info);
+
+        new Weighted<int>(1, 0);
+        new Weighted<int>(1, 0);
         _device = GraphicsDevice;
 
         var subscribers = AppDomain.CurrentDomain.GetAssemblies()

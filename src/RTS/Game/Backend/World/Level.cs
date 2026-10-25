@@ -22,6 +22,8 @@ public class Level
             .WithStep(e => e.Level.loadedChunks.Remove(e.Position))
             .WithStep(e => e.Chunk.Value.Dispose());
 
+        private int nextEntityId = 1;
+
         protected Dictionary<Point, Chunk> loadedChunks = [];
         public ReadOnlyDictionary<Point, Chunk> LoadedChunks => loadedChunks.AsReadOnly();
 
@@ -82,4 +84,10 @@ public class Level
                 chunk.Draw(spriteBatch);
             }
         }
+
+
+        public int GetNextEntityId() =>
+            nextEntityId;
+        public int ConsumeNextEntityId() =>
+            nextEntityId++;
     }
