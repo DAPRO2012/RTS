@@ -1,8 +1,8 @@
 {
   "surface": "RTS:grass",
   "temperature": 0.3,
-  "humidity": 0.5,
+  "humidity": 0.8,
   "features": [
-    { "material": "RTS:log", "chance": 0.9, "seed": 42 }
+    { "material": "RTS:log", "chance": 0.75, "seed": 42 }
   ]
 }
