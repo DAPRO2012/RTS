@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace RTS;
 
-public class Main : Game
+public class Main : Microsoft.Xna.Framework.Game
 {
     //Global Vars
 
