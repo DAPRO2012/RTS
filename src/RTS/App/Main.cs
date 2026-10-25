@@ -68,9 +68,7 @@ public class Main : Game
             .Where(type => type.IsDefined(typeof(EventBusSubscriber), inherit: false));
         
         foreach (Type subscriber in subscribers)
-        {
             EVENT_BUS.Register(subscriber);
-        }
 
         _registryPipeline.WithStep(e => EVENT_BUS.Publish(e));
 

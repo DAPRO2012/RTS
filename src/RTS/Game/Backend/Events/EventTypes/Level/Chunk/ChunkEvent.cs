@@ -1,8 +1,11 @@
-public class ChunkEvent(Level level, Chunk chunk) : LevelEvent(level)
-{
-    public readonly Chunk Chunk = chunk;
-    public Chunk GetChunk() => Chunk;
+using Microsoft.Xna.Framework;
 
-    public new class Load(Level level, Chunk chunk) : ChunkEvent(level, chunk);
-    public new class Unload(Level level, Chunk chunk) : ChunkEvent(level, chunk);
+public class ChunkEvent(Level level, Optional<Chunk> chunk, Point position) : LevelEvent(level)
+{
+    public Optional<Chunk> Chunk { get; private set; } = chunk;
+    public Optional<Chunk> GetChunk() => Chunk;
+    public readonly Point Position = position;
+
+    public new class Load(Level level, Optional<Chunk> chunk, Point position) : ChunkEvent(level, chunk, position);
+    public new class Unload(Level level, Optional<Chunk> chunk, Point position) : ChunkEvent(level, chunk, position);
 }
