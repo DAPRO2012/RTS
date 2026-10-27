@@ -31,7 +31,7 @@ public abstract class Logger : IDisposable
 
     public void Log(string message, int level)
     {
-        if (logLevel <= level) {
+        if (logLevel == level) {
             _logQueue.Add(() => write(message));
         }
         nextLogger?.Log(message, level);

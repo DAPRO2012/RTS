@@ -17,7 +17,7 @@ internal class LoggerDebug : Logger
 
     protected override void write(string message)
     {
-        
+        Console.WriteLine("[{0}] [DEBUG] {1}", DateTime.Now.ToString("HH:mm:ss"), message);
     }
 }
 internal class LoggerWarn : Logger

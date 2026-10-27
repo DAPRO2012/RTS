@@ -4,16 +4,17 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using RTS;
 using SpriteFontPlus;
 
-public class Font : DrawableResource
+public class Font
 {
     protected SpriteFont _spriteFont;
 
     public Font(Identifier id, ContentManager content)
     {
         string rootDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, content.RootDirectory, "assets");
-        string path = Data.GetPath(rootDir, id);
+        string path = new Path(rootDir, id.GetNamespace(), id.GetPath()).ToString();
 
         byte[] ttfData = File.ReadAllBytes(path);
 
@@ -28,7 +29,7 @@ public class Font : DrawableResource
             ]
         );
 
-        _spriteFont = bakedFont.CreateSpriteFont(Device);
+        _spriteFont = bakedFont.CreateSpriteFont(Main.GetDevice());
     }
 
     public void Draw(string text, Vector2 position, Color color, SpriteBatch spriteBatch, int size = 25, float rot = 0f)

@@ -73,8 +73,6 @@ public class Main : Microsoft.Xna.Framework.Game
         warn.SetNextLogger(error);
         LogUtils.SetLogger(info);
 
-        new Weighted<int>(1, 0);
-        new Weighted<int>(1, 0);
         _device = GraphicsDevice;
 
         var subscribers = AppDomain.CurrentDomain.GetAssemblies()

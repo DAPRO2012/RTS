@@ -1,4 +1,8 @@
+#nullable enable
+
 using System;
+using System.Linq;
+using System.Text.Json.Nodes;
 
 public class Identifier
 {
@@ -7,14 +11,18 @@ public class Identifier
     private readonly string _namespace;
     private readonly string _path;
 
-    protected Identifier(string id)
+    public Identifier(string id)
     {
         string[] splitId = id.Split(":", 2);
         _namespace = splitId[0];
         _path = splitId[1];
     }
-
-    protected Identifier(string @namespace, string path)
+    public Identifier(string[] strings)
+    {
+        _namespace = strings[0];
+        _path = string.Join("/", strings.Skip(1));
+    }
+    public Identifier(string @namespace, string path)
     {
         _namespace = @namespace;
         _path = path;
@@ -53,4 +61,24 @@ public class Identifier
     public bool Equals(Identifier other) => _namespace == other._namespace && _path == other._path;
     public override bool Equals(object obj) => obj is Identifier other && Equals(other);
     public override int GetHashCode() => HashCode.Combine(_namespace, _path);
+
+    public static readonly Codec<Identifier> CODEC = new IdentifierCodec(); 
+
+    private sealed class IdentifierCodec : Codec<Identifier>
+    {
+        public override DataResult<JsonNode> Encode(Identifier value)
+        {
+            if (value == null)
+                return new DataResult<JsonNode>.Error<JsonNode>("Identifier Has No Value", Optional.Empty<JsonNode>());
+            return new DataResult<JsonNode>.Success<JsonNode>(JsonValue.Create(value.ToString()));
+        }
+        public override DataResult<Identifier> Decode(JsonNode? input)
+        {
+            if (input is JsonValue value && value.TryGetValue(out string? result)
+                && result is not null)
+                return new DataResult<Identifier>.Success<Identifier>(new Identifier(result));
+
+            return new DataResult<Identifier>.Error<Identifier>("Expected a string.", Optional.Empty<Identifier>());
+        }
+    }
 }

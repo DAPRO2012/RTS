@@ -1,0 +1,6 @@
+{
+    "method": "overlay",
+    "z-layer": 1,
+    "overlay": "RTS:ground/grass/overlay",
+    "textures": ["RTS:ground/grass/grass"]
+}

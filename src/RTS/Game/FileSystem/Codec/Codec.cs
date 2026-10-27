@@ -235,7 +235,7 @@ public static class Codec
 
         public override DataResult<string> Decode(JsonNode? input)
         {
-            if (input is JsonValue value && value.TryGetValue<string>(out string? result)
+            if (input is JsonValue value && value.TryGetValue(out string? result)
                 && result is not null)
             {
                 return new DataResult<string>.Success<string>(result);
