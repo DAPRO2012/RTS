@@ -61,7 +61,7 @@ public class GameScene(ContentManager content, TextureManager textureManager, Sc
         spriteBatch.GraphicsDevice.Clear(Color.White);
 
         lvl.BuildCache(spriteBatch, _textureManager);
-        spriteBatch.Begin(transformMatrix:Camera.ScaleMatrix * Camera.TranslationMatrix);
+        spriteBatch.Begin(SpriteSortMode.BackToFront, transformMatrix:Camera.ScaleMatrix * Camera.TranslationMatrix);
             lvl.Draw(spriteBatch, _textureManager);
         spriteBatch.End();
     }

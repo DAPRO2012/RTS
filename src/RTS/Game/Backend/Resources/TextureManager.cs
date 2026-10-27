@@ -267,7 +267,7 @@ public class TextureRegion
     public void Draw(SpriteBatch spriteBatch, Rectangle destination, Color color) =>
         spriteBatch.Draw(Atlas, destination, SourceRect, color);
 
-    public void Draw(SpriteBatch spriteBatch, Vector2 position, Color color, Point? size = null, float rotation = 0f)
+    public void Draw(SpriteBatch spriteBatch, Vector2 position, Color color, Point? size = null, float rotation = 0f, float depth = 0f)
     {
         Point drawSize = size ?? new Point(Chunk.TileSize);
         if (rotation == 0f)
@@ -281,7 +281,7 @@ public class TextureRegion
         Vector2 scale = new(
             drawSize.X / (float)SourceRect.Width,
             drawSize.Y / (float)SourceRect.Height);
-        spriteBatch.Draw(Atlas, center, SourceRect, color, rotation, origin, scale, SpriteEffects.None, 1f);
+        spriteBatch.Draw(Atlas, center, SourceRect, color, rotation, origin, scale, SpriteEffects.None, depth);
     }
 
     public TextureRegion(Texture2D atlas, Rectangle sourceRect)

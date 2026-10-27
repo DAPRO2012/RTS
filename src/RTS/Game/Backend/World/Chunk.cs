@@ -19,6 +19,7 @@ public class Chunk
     private readonly int[][][] _tiles;
 
     private RenderTarget2D _cachedTexture;
+    private RenderTarget2D _cachedOverlayTexture;
 
     public bool IsDirty { get; set; } = true;
     public bool IsChanged { get; set; } = false;
@@ -49,6 +50,11 @@ public class Chunk
         _tiles = (int[][][])tiles.Clone();
 
         _cachedTexture = new RenderTarget2D(
+            Main.GetDevice(),
+            (ChunkSize + 2) * TileSize,
+            (ChunkSize + 2) * TileSize
+        );
+        _cachedOverlayTexture = new RenderTarget2D(
             Main.GetDevice(),
             (ChunkSize + 2) * TileSize,
             (ChunkSize + 2) * TileSize
@@ -131,6 +137,11 @@ public class Chunk
                 }
             }
         }
+        spriteBatch.End();
+
+        Main.GetDevice().SetRenderTarget(_cachedOverlayTexture);
+        Main.GetDevice().Clear(Color.Transparent);
+        spriteBatch.Begin(samplerState: SamplerState.PointClamp);
         foreach (var overlay in overlays)
         {
             TextureRegion tileTexture = textures.GetRegion(overlay.Texture);
@@ -138,22 +149,50 @@ public class Chunk
                 spriteBatch,
                 new Vector2((overlay.TileOffset.X + 1) * TileSize, (overlay.TileOffset.Y + 1) * TileSize),
                 Color.White,
-                rotation:overlay.Rotation);
+                rotation: overlay.Rotation);
         }
-
         spriteBatch.End();
+
         Main.GetDevice().SetRenderTarget(null);
         IsDirty = false;
     }
 
-    public void Draw(SpriteBatch spriteBatch)
+    public void DrawBase(SpriteBatch spriteBatch)
     {
         if (_isDisposed) return;
         
         Vector2 worldPosition = new(
             GridPosition.X * ChunkSize * TileSize - TileSize,
             GridPosition.Y * ChunkSize * TileSize - TileSize);
-        spriteBatch.Draw(_cachedTexture, worldPosition, Color.White);
+        spriteBatch.Draw(
+            _cachedTexture,
+            worldPosition,
+            null,
+            Color.White,
+            0f,
+            Vector2.Zero,
+            1f,
+            SpriteEffects.None,
+            1f);
+    }
+
+    public void DrawOverlays(SpriteBatch spriteBatch)
+    {
+        if (_isDisposed) return;
+
+        Vector2 worldPosition = new(
+            GridPosition.X * ChunkSize * TileSize - TileSize,
+            GridPosition.Y * ChunkSize * TileSize - TileSize);
+        spriteBatch.Draw(
+            _cachedOverlayTexture,
+            worldPosition,
+            null,
+            Color.White,
+            0f,
+            Vector2.Zero,
+            1f,
+            SpriteEffects.None,
+            0f);
     }
 
     public void Dispose()
@@ -161,6 +200,7 @@ public class Chunk
         if (!_isDisposed)
         {
             _cachedTexture?.Dispose();
+            _cachedOverlayTexture?.Dispose();
             _isDisposed = true;
         }
     }

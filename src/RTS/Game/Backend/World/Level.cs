@@ -81,7 +81,11 @@ public class Level
     {
         foreach (Chunk chunk in loadedChunks.Values)
         {
-            chunk.Draw(spriteBatch);
+            chunk.DrawBase(spriteBatch);
+        }
+        foreach (Chunk chunk in loadedChunks.Values)
+        {
+            chunk.DrawOverlays(spriteBatch);
         }
     }
 
