@@ -13,7 +13,7 @@ public static class BuiltInRegistries
     public static readonly Registry<Ground> GROUNDS = RegisterSimple<Ground>("ground");
     public static readonly Registry<BiomeDefinition> BIOMES = RegisterSimple<BiomeDefinition>("biome");
 
-    public static readonly Registry<EntityType<Entity>> ENTITY_TYPES = RegisterSimple<EntityType<Entity>>("entity_type");
+    public static readonly Registry<EntityType> ENTITY_TYPES = RegisterSimple<EntityType>("entity_type");
 
     internal static Registry<T> RegisterSimple<T>(string name) => InternalRegister<T>(Identifier.fromDefaultNamespace(name));
     private static Registry<T> InternalRegister<T>(Identifier id) {

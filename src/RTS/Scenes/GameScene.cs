@@ -10,7 +10,8 @@ using RTS;
 
 public class GameScene(ContentManager content, TextureManager textureManager, ScreenManager screenManager) : Scene(content, screenManager)
 {
-    Level lvl = new("test");
+    ClientLevel clientLevel = new();
+    ServerLevel serverLevel = new("test");
 
     public Camera Camera = new(null);
     public Vector2 CameraPos = Vector2.Zero;
@@ -35,7 +36,7 @@ public class GameScene(ContentManager content, TextureManager textureManager, Sc
 
         Camera.Update(gameTime, CameraPos, Main.Dimensions);
 
-        float chunkWorldSize = Chunk.TileSize * Chunk.ChunkSize;
+        float chunkWorldSize = IChunk.TileSize * IChunk.ChunkSize;
         float halfViewWidth = Main.Dimensions.Width / (2f * Camera.Scale);
         float halfViewHeight = Main.Dimensions.Height / (2f * Camera.Scale);
         const int chunkBuffer = 1;
@@ -49,20 +50,40 @@ public class GameScene(ContentManager content, TextureManager textureManager, Sc
         for (int y = minChunkY; y <= maxChunkY; y++)
             loadPoints.Add(new Point(x, y));
 
-        foreach (var point in new List<Point>(lvl.LoadedChunks.Keys))
-            if (!loadPoints.Contains(point)) lvl.UnloadChunk(point);
+        var serverChunks = serverLevel.GetChunks();
+        var clientChunks = clientLevel.GetChunks();
+
+        foreach (var point in new List<Point>(serverChunks.Keys))
+        if (!loadPoints.Contains(point))
+        {
+            serverLevel.UnloadChunk(point);
+            clientLevel.RemoveChunk(point);
+        }
         foreach (Point point in loadPoints)
-            if (!lvl.IsLoaded(point))
-                lvl.LoadChunk(point);
+        if (!serverLevel.IsLoaded(point))
+        {
+            serverLevel.LoadChunk(point);
+            clientLevel.SetChunk(point, serverLevel.GetChunk(point).GenerateSnapshot());
+        }
+
+        /*
+        foreach (var chunkPoint in clientChunks)
+        if (chunkPoint.Value.IsChanged)
+            serverLevel.GetChunk(chunkPoint.Key).UpdateWithSnapshot(chunkPoint.Value.GenerateSnapshot());
+
+        foreach (var chunkPoint in clientChunks)
+        if (chunkPoint.Value.IsChanged)
+            clientLevel.GetChunk(chunkPoint.Key).UpdateWithSnapshot(chunkPoint.Value.GenerateSnapshot());
+        */
     }
 
     public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
         spriteBatch.GraphicsDevice.Clear(Color.White);
 
-        lvl.BuildCache(spriteBatch, _textureManager);
+        clientLevel.BuildCache(spriteBatch, _textureManager);
         spriteBatch.Begin(SpriteSortMode.BackToFront, transformMatrix:Camera.ScaleMatrix * Camera.TranslationMatrix);
-            lvl.Draw(spriteBatch, _textureManager);
+            clientLevel.Draw(spriteBatch, _textureManager);
         spriteBatch.End();
     }
 }

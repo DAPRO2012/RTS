@@ -1,8 +1,8 @@
-public class LevelEvent(Level level) : Event
+public class LevelEvent<TLevel>(TLevel level) : Event where TLevel : ILevel
 {
-    public readonly Level Level = level;
-    public Level GetLevel() => Level;
+    public readonly TLevel Level = level;
+    public TLevel GetLevel() => Level;
 
-    public class Load(Level level) : LevelEvent(level);
-    public class Unload(Level level) : LevelEvent(level);
+    public class Load(ServerLevel level) : LevelEvent<ServerLevel>(level);
+    public class Unload(ServerLevel level) : LevelEvent<ServerLevel>(level);
 }

@@ -13,7 +13,7 @@ public static class AutoTileUtil
         Identifier BaseTexture,
         IReadOnlyList<OverlayDraw> Overlays);
 
-    public static AutoTileResult GetRequiredTexture(TextureData data, WorldPos tilePos, Level level)
+    public static AutoTileResult GetRequiredTexture(TextureData data, WorldPos tilePos, ILevel level)
     {
         if (data.Method == AutoTileType.None)
             return new(data.TextureIdentifiers[0], []);

@@ -1,21 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Text.Json.Nodes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using RTS;
-using SharpDX.Direct2D1.Effects;
-using SharpDX.Win32;
 
-public class Chunk
+public class ClientChunk : IChunk
 {
-    private static readonly Logger LOGGER = LogUtils.GetLogger();
-
-    public const int ChunkSize = 64;
-    public const int TileSize = 32;
-    public const int LayerCount = 3;
-
-    public Point GridPosition { get; private set; }
+    public Point GridPosition { get; set; }
     private readonly int[][][] _tiles;
 
     private RenderTarget2D _cachedTexture;
@@ -25,55 +15,24 @@ public class Chunk
     public bool IsChanged { get; set; } = false;
     private bool _isDisposed = false;
 
-    private static int[][][] CreateEmptyTiles()
+    public ClientChunk(Point gridPosition)
     {
-        int[][][] tiles = new int[LayerCount][][];
-        for (int l = 0; l < LayerCount; l++)
-        {
-            tiles[l] = new int[ChunkSize][];
-            for (int x = 0; x < ChunkSize; x++)
-            {
-                tiles[l][x] = new int[ChunkSize];
-            }
-        }
-        return tiles;
-    }
-
-    public Chunk(Point gridPosition)
-        : this(gridPosition, CreateEmptyTiles())
-    {
-    }
-
-    public Chunk(Point gridPosition, int[][][] tiles)
-    {
+        _tiles = IChunk.CreateEmptyTiles();
         GridPosition = gridPosition;
-        _tiles = (int[][][])tiles.Clone();
 
         _cachedTexture = new RenderTarget2D(
             Main.GetDevice(),
-            (ChunkSize + 2) * TileSize,
-            (ChunkSize + 2) * TileSize
+            (IChunk.ChunkSize + 2) * IChunk.TileSize,
+            (IChunk.ChunkSize + 2) * IChunk.TileSize
         );
         _cachedOverlayTexture = new RenderTarget2D(
             Main.GetDevice(),
-            (ChunkSize + 2) * TileSize,
-            (ChunkSize + 2) * TileSize
+            (IChunk.ChunkSize + 2) * IChunk.TileSize,
+            (IChunk.ChunkSize + 2) * IChunk.TileSize
         );
     }
 
-    public void SetTile(int x, int y, WorldLayer layer, Identifier tileID)
-    {
-        _tiles[(int)layer][x][y] = BuiltInRegistries.STRUCTURES.GetId(tileID);
-        IsDirty = true;
-        IsChanged = true;
-    }
-
-    public int GetTile(int x, int y, WorldLayer layer)
-    {
-        return _tiles[(int)layer][x][y];
-    }
-
-    public void BuildCache(SpriteBatch spriteBatch, TextureManager textures, Level level)
+    public void BuildCache(SpriteBatch spriteBatch, TextureManager textures, ILevel level)
     {
         if (!IsDirty || _isDisposed) return;
 
@@ -83,11 +42,11 @@ public class Chunk
         spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
         List<AutoTileUtil.OverlayDraw> overlays = [];
-        for (int l = 0; l < LayerCount; l++)
+        for (int l = 0; l < IChunk.LayerCount; l++)
         {
-            for (int x = 0; x < ChunkSize; x++)
+            for (int x = 0; x < IChunk.ChunkSize; x++)
             {
-                for (int y = 0; y < ChunkSize; y++)
+                for (int y = 0; y < IChunk.ChunkSize; y++)
                 {
                     int tileId = _tiles[l][x][y];
                     if (tileId == 0) continue;
@@ -114,8 +73,8 @@ public class Chunk
                     TextureData tileData = textures.GetTextureData(registryId, blockId);
                     if (tileData != null)
                     {
-                        int worldX = GridPosition.X * ChunkSize + x;
-                        int worldY = GridPosition.Y * ChunkSize + y;
+                        int worldX = GridPosition.X * IChunk.ChunkSize + x;
+                        int worldY = GridPosition.Y * IChunk.ChunkSize + y;
                         var textureId = AutoTileUtil.GetRequiredTexture(tileData, new WorldPos(worldX, worldY, (WorldLayer)l), level);
                         foreach (var overlay in  textureId.Overlays)
                             overlays.Add(
@@ -131,7 +90,7 @@ public class Chunk
                         tileTexture = textures.GetRegion(registryId, blockId);
                     tileTexture?.Draw(
                             spriteBatch,
-                            new Vector2((x + 1) * TileSize, (y + 1) * TileSize),
+                            new Vector2((x + 1) * IChunk.TileSize, (y + 1) * IChunk.TileSize),
                             Color.White);
                     
                 }
@@ -147,7 +106,7 @@ public class Chunk
             TextureRegion tileTexture = textures.GetRegion(overlay.Texture);
             tileTexture?.Draw(
                 spriteBatch,
-                new Vector2((overlay.TileOffset.X + 1) * TileSize, (overlay.TileOffset.Y + 1) * TileSize),
+                new Vector2((overlay.TileOffset.X + 1) * IChunk.TileSize, (overlay.TileOffset.Y + 1) * IChunk.TileSize),
                 Color.White,
                 rotation: overlay.Rotation);
         }
@@ -162,8 +121,8 @@ public class Chunk
         if (_isDisposed) return;
         
         Vector2 worldPosition = new(
-            GridPosition.X * ChunkSize * TileSize - TileSize,
-            GridPosition.Y * ChunkSize * TileSize - TileSize);
+            GridPosition.X * IChunk.ChunkSize * IChunk.TileSize - IChunk.TileSize,
+            GridPosition.Y * IChunk.ChunkSize * IChunk.TileSize - IChunk.TileSize);
         spriteBatch.Draw(
             _cachedTexture,
             worldPosition,
@@ -181,8 +140,8 @@ public class Chunk
         if (_isDisposed) return;
 
         Vector2 worldPosition = new(
-            GridPosition.X * ChunkSize * TileSize - TileSize,
-            GridPosition.Y * ChunkSize * TileSize - TileSize);
+            GridPosition.X * IChunk.ChunkSize * IChunk.TileSize - IChunk.TileSize,
+            GridPosition.Y * IChunk.ChunkSize * IChunk.TileSize - IChunk.TileSize);
         spriteBatch.Draw(
             _cachedOverlayTexture,
             worldPosition,
@@ -205,13 +164,29 @@ public class Chunk
         }
     }
 
-    public static readonly Codec<Chunk> CODEC = RecordCodecBuilder<Chunk>.Create()
-        .Field(Codec.INT.FieldOf("x"), data => data.GridPosition.X)
-        .Field(Codec.INT.FieldOf("y"), data => data.GridPosition.Y)
-        .Field(Codec.INT.ArrayOf().ArrayOf().ArrayOf().FieldOf("tiles"),
-            data => data._tiles)
-        .Build(fields =>
-            new Chunk(
-                new Point((int)fields[0], (int)fields[1]),
-                (int[][][])fields[2]));
+    public void SetTile(int x, int y, WorldLayer layer, Identifier tileID)
+    {
+        _tiles[(int)layer][x][y] = BuiltInRegistries.STRUCTURES.GetId(tileID);
+        IsChanged = true;
+        IsDirty = true;
+    }
+
+    public int GetTile(int x, int y, WorldLayer layer)
+    {
+        return _tiles[(int)layer][x][y];
+    }
+
+    public void UpdateWithSnapshot(ChunkSnapshot snapshot)
+    {
+        for (int l = 0; l < snapshot.chunkTiles.Length; l++)
+        for (int x = 0; x < snapshot.chunkTiles[0].Length; x++)
+        for (int y = 0; y < snapshot.chunkTiles[0][0].Length; y++)
+        {
+            if (snapshot.chunkTiles[l][x][y] != _tiles[l][x][y])
+                _tiles[l][x][y] = snapshot.chunkTiles[l][x][y];
+        }
+        IsChanged = false;
+    }
+    public ChunkSnapshot GenerateSnapshot() =>
+        new ChunkSnapshot(_tiles);
 }

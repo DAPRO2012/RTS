@@ -4,12 +4,12 @@ public sealed class MaterialGenerator
 {
     public DataResult<Material[][]> Generate(Point gridPos, BiomeDefinition[][] biomes, int worldSeed)
     {
-        Material[][] materials = new Material[Chunk.ChunkSize][];
-        for (int i = 0; i < Chunk.ChunkSize; i++)
-            materials[i] = new Material[Chunk.ChunkSize];
+        Material[][] materials = new Material[IChunk.ChunkSize][];
+        for (int i = 0; i < IChunk.ChunkSize; i++)
+            materials[i] = new Material[IChunk.ChunkSize];
 
-        for (int x = 0; x < Chunk.ChunkSize; x++)
-        for (int y = 0; y < Chunk.ChunkSize; y++)
+        for (int x = 0; x < IChunk.ChunkSize; x++)
+        for (int y = 0; y < IChunk.ChunkSize; y++)
         {
             BiomeDefinition biome = biomes[x][y];
             if (biome == null)
@@ -17,8 +17,8 @@ public sealed class MaterialGenerator
                     "Material generation received an invalid biome.",
                     Optional.Empty<Material[][]>());
 
-            int worldX = gridPos.X * Chunk.ChunkSize + x;
-            int worldY = gridPos.Y * Chunk.ChunkSize + y;
+            int worldX = gridPos.X * IChunk.ChunkSize + x;
+            int worldY = gridPos.Y * IChunk.ChunkSize + y;
             foreach (MaterialFeature feature in biome.Features)
             {
                 if (GetPlacementValue(worldX, worldY, worldSeed ^ feature.Seed) >= feature.Chance)

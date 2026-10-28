@@ -2,5 +2,5 @@ using Microsoft.Xna.Framework;
 
 public interface IChunkGenerator
 {
-    public DataResult<Chunk> Generate(Point gridPos);
+    public DataResult<ServerChunk> Generate(Point gridPos);
 }

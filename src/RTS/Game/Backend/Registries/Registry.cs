@@ -13,7 +13,7 @@ public class Registry<T>
 
     public IReadOnlyDictionary<Identifier, T> Entries => _entries;
 
-    internal T Register(Identifier id, T value)
+    internal TEntry Register<TEntry>(Identifier id, TEntry value) where TEntry : T
     {
         if (_isFrozen) 
             throw new InvalidOperationException($"Registry {GetRegistryIdentifier()} is frozen! Cannot register {id}.");

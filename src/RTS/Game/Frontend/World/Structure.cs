@@ -1,4 +1,4 @@
 public class Structure
 {
-    public virtual bool CanSurvive(Level level, WorldPos position) => true;
+    public virtual bool CanSurvive(ServerLevel level, WorldPos position) => true;
 }

@@ -12,17 +12,17 @@ public class ChunkGenerator : IChunkGenerator
         _biomeGen = new BiomeGenerator(seed);
     }
 
-    public DataResult<Chunk> Generate(Point gridPos)
+    public DataResult<ServerChunk> Generate(Point gridPos)
     {
-        int[][][] tiles = new int[Chunk.LayerCount][][];
-        int[][] groundTiles = new int[Chunk.ChunkSize][];
-        int[][] materialTiles = new int[Chunk.ChunkSize][];
-        int[][] structureTiles = new int[Chunk.ChunkSize][];
-        for (int arrayIndex = 0; arrayIndex < Chunk.ChunkSize; arrayIndex++)
+        int[][][] tiles = new int[IChunk.LayerCount][][];
+        int[][] groundTiles = new int[IChunk.ChunkSize][];
+        int[][] materialTiles = new int[IChunk.ChunkSize][];
+        int[][] structureTiles = new int[IChunk.ChunkSize][];
+        for (int arrayIndex = 0; arrayIndex < IChunk.ChunkSize; arrayIndex++)
         {
-            groundTiles[arrayIndex] = new int[Chunk.ChunkSize];
-            materialTiles[arrayIndex] = new int[Chunk.ChunkSize];
-            structureTiles[arrayIndex] = new int[Chunk.ChunkSize];
+            groundTiles[arrayIndex] = new int[IChunk.ChunkSize];
+            materialTiles[arrayIndex] = new int[IChunk.ChunkSize];
+            structureTiles[arrayIndex] = new int[IChunk.ChunkSize];
         }
 
         tiles[(int)WorldLayer.Ground] = groundTiles;
@@ -35,26 +35,26 @@ public class ChunkGenerator : IChunkGenerator
             string message = biomeResult is DataResult<BiomeDefinition[][]>.Error<BiomeDefinition[][]> error
                 ? error.Message
                 : "Biome generation failed.";
-            return new DataResult<Chunk>.Error<Chunk>(
+            return new DataResult<ServerChunk>.Error<ServerChunk>(
                 message,
-                Optional.Empty<Chunk>());
+                Optional.Empty<ServerChunk>());
         }
 
         BiomeDefinition[][] biomes = biomeResult.Result().Value;
-        for (int x = 0; x < Chunk.ChunkSize; x++)
-        for (int y = 0; y < Chunk.ChunkSize; y++)
+        for (int x = 0; x < IChunk.ChunkSize; x++)
+        for (int y = 0; y < IChunk.ChunkSize; y++)
         {
             BiomeDefinition biome = biomes[x][y];
             if (biome == null)
-                return new DataResult<Chunk>.Error<Chunk>(
+                return new DataResult<ServerChunk>.Error<ServerChunk>(
                     "Biome generation produced a null biome.",
-                    Optional.Empty<Chunk>());
+                    Optional.Empty<ServerChunk>());
 
             int groundId = BuiltInRegistries.GROUNDS.GetId(biome.SurfaceGround);
             if (groundId == 0)
-                return new DataResult<Chunk>.Error<Chunk>(
+                return new DataResult<ServerChunk>.Error<ServerChunk>(
                     $"Biome references an unregistered surface ground: {biome.SurfaceGround}.",
-                    Optional.Empty<Chunk>());
+                    Optional.Empty<ServerChunk>());
 
             groundTiles[x][y] = groundId;
         }
@@ -65,14 +65,14 @@ public class ChunkGenerator : IChunkGenerator
             string message = materialResult is DataResult<Material[][]>.Error<Material[][]> error
                 ? error.Message
                 : "Material generation failed.";
-            return new DataResult<Chunk>.Error<Chunk>(
+            return new DataResult<ServerChunk>.Error<ServerChunk>(
                 message,
-                Optional.Empty<Chunk>());
+                Optional.Empty<ServerChunk>());
         }
 
         Material[][] materials = materialResult.Result().Value;
-        for (int x = 0; x < Chunk.ChunkSize; x++)
-        for (int y = 0; y < Chunk.ChunkSize; y++)
+        for (int x = 0; x < IChunk.ChunkSize; x++)
+        for (int y = 0; y < IChunk.ChunkSize; y++)
         {
             Material material = materials[x][y];
             if (material == null)
@@ -80,13 +80,13 @@ public class ChunkGenerator : IChunkGenerator
 
             int materialId = BuiltInRegistries.MATERIALS.GetId(material);
             if (materialId == 0)
-                return new DataResult<Chunk>.Error<Chunk>(
+                return new DataResult<ServerChunk>.Error<ServerChunk>(
                     "Material generation produced an unregistered tile.",
-                    Optional.Empty<Chunk>());
+                    Optional.Empty<ServerChunk>());
 
             materialTiles[x][y] = materialId;
         }
 
-        return new DataResult<Chunk>.Success<Chunk>(new Chunk(gridPos, tiles));
+        return new DataResult<ServerChunk>.Success<ServerChunk>(new ServerChunk(gridPos, tiles));
     }
 }

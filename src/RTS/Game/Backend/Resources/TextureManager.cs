@@ -269,7 +269,7 @@ public class TextureRegion
 
     public void Draw(SpriteBatch spriteBatch, Vector2 position, Color color, Point? size = null, float rotation = 0f, float depth = 0f)
     {
-        Point drawSize = size ?? new Point(Chunk.TileSize);
+        Point drawSize = size ?? new Point(IChunk.TileSize);
         if (rotation == 0f)
         {
             spriteBatch.Draw(Atlas, new Rectangle(position.ToPoint(), drawSize), SourceRect, color);

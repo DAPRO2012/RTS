@@ -23,14 +23,14 @@ public sealed class BiomeGenerator
                 "No biomes are registered.",
                 Optional.Empty<BiomeDefinition[][]>());
 
-        BiomeDefinition[][] result = new BiomeDefinition[Chunk.ChunkSize][];
-        for (int x = 0; x < Chunk.ChunkSize; x++)
+        BiomeDefinition[][] result = new BiomeDefinition[IChunk.ChunkSize][];
+        for (int x = 0; x < IChunk.ChunkSize; x++)
         {
-            result[x] = new BiomeDefinition[Chunk.ChunkSize];
-            for (int y = 0; y < Chunk.ChunkSize; y++)
+            result[x] = new BiomeDefinition[IChunk.ChunkSize];
+            for (int y = 0; y < IChunk.ChunkSize; y++)
             {
-                int worldX = gridPos.X * Chunk.ChunkSize + x;
-                int worldY = gridPos.Y * Chunk.ChunkSize + y;
+                int worldX = gridPos.X * IChunk.ChunkSize + x;
+                int worldY = gridPos.Y * IChunk.ChunkSize + y;
                 float temperature = _temperatureNoise.GetNoise(worldX, worldY);
                 float humidity = _humidityNoise.GetNoise(worldX, worldY);
                 result[x][y] = FindClosestBiome(biomes, temperature, humidity);
@@ -45,7 +45,7 @@ public sealed class BiomeGenerator
         noise.SetSeed(seed);
         noise.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
         noise.SetFractalType(FastNoiseLite.FractalType.FBm);
-        noise.SetFrequency(0.1f);
+        noise.SetFrequency(0.01f);
     }
 
     private static BiomeDefinition FindClosestBiome(
